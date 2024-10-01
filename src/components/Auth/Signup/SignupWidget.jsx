@@ -10,6 +10,8 @@ import settings from "../../../../utils/settings";
 import Image from "next/image";
 import countries from "../../../data/CountryCodes.json"
 import axios from "axios";
+import LoginWidget from "../Login";
+import Login from "../Login";
 
 function SignupWidget({ redirect = true, signupActionPopup,changeContent }) {
   const router = useRouter();
@@ -44,39 +46,52 @@ function SignupWidget({ redirect = true, signupActionPopup,changeContent }) {
   };
   const doSignup = async () => {
     setLoading(true);
+    
+    // Check if phone number starts with +233
+    const isPhoneNumberValid = phone.startsWith("+233");
+
     await apiRequest
         .signup({
-          name: fname + " " + lname,
-          email: email,
-          password: password,
-          password_confirmation: confirmPassword,
-          agree: checked ? 1 : "",
-          phone:phone?phone:''
+            name: `${fname} ${lname}`,
+            email: email,
+            password: password,
+            password_confirmation: confirmPassword,
+            agree: checked ? 1 : "",
+            phone: phone ? phone : ''
         })
         .then((res) => {
-          setLoading(false);
-          toast.success(res.data.notification);
-          if (redirect) {
-            router.push(`/verify-you?email=${email}`);
-          }else{
-            changeContent()
-          }
-          setFname("");
-          setLname("");
-          setEmail("");
-          setPassword("");
-          setConfirmPassword("");
-          setCheck(false);
+            setLoading(false);
+            // toast.success(res.data.notification);
+            
+            
+            // Skip verification if the phone number does not start with +233
+            if (redirect && isPhoneNumberValid) {
+              toast.success("Registerd Successfully. Please verify your account");
+                router.push(`/verify-you?email=${email}`);
+            } else {
+                // changeContent();
+                toast.success("Registerd Successfully. Login now.");
+               router.push(`/login`);
+                
+            }
+            // Clear the form fields
+            setFname("");
+            setLname("");
+            setEmail("");
+            setPassword("");
+            setConfirmPassword("");
+            setCheck(false);
         })
         .catch((err) => {
-          console.log(err);
-          if(err.response.status===403){
-            toast.error( err.response.data.message);
-          }
-          setLoading(false);
-          setErrors(err.response && err.response.data.errors);
+            console.log(err);
+            if (err.response && err.response.status === 403) {
+                toast.error(err.response.data.message);
+            }
+            setLoading(false);
+            setErrors(err.response && err.response.data.errors);
         });
-  };
+};
+
   const {phone_number_required,default_phone_code}=settings();
   useEffect(()=>{
     if(default_phone_code){
