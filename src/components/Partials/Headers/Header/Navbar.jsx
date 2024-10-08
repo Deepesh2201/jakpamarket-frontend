@@ -6,6 +6,8 @@ import Arrow from "../../../Helpers/icons/Arrow";
 import FontAwesomeCom from "../../../Helpers/icons/FontAwesomeCom";
 import Multivendor from "../../../Shared/Multivendor";
 import ServeLangItem from "../../../Helpers/ServeLangItem";
+import auth from "../../../../../utils/auth";
+
 export default function Navbar({ className }) {
   const { websiteSetup } = useSelector((state) => state.websiteSetup);
   const categoryList = websiteSetup && websiteSetup.payload.productCategories;
@@ -531,41 +533,44 @@ export default function Navbar({ className }) {
             </div>
             {Multivendor() === 1 && (
               <div className="become-seller-btn">
-                <Link href="/become-seller" passHref>
-                  <a rel="noopener noreferrer">
-                    <div className=" w-[161px] h-[40px] flex justify-center items-center cursor-pointer">
-                      <div className="flex rtl:space-x-reverse space-x-2 items-center">
-                        <span className="text-sm font-600">
-                          {ServeLangItem()?.Become_seller}
-                        </span>
-                        <span className="transform rtl:rotate-180 fill-current ">
-                          <svg
-                            width="6"
-                            height="10"
-                            viewBox="0 0 6 10"
-                            fill="none"
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="fill-current"
-                          >
-                            <rect
-                              x="1.08984"
-                              width="6.94106"
-                              height="1.54246"
-                              transform="rotate(45 1.08984 0)"
-                            />
-                            <rect
-                              x="6"
-                              y="4.9082"
-                              width="6.94106"
-                              height="1.54246"
-                              transform="rotate(135 6 4.9082)"
-                            />
-                          </svg>
-                        </span>
-                      </div>
-                    </div>
-                  </a>
-                </Link>
+                {auth() && (
+  <Link href="/become-seller" passHref>
+    <a rel="noopener noreferrer">
+      <div className="w-[161px] h-[40px] flex justify-center items-center cursor-pointer">
+        <div className="flex rtl:space-x-reverse space-x-2 items-center">
+          <span className="text-sm font-600">
+            Apply for Seller
+          </span>
+          <span className="transform rtl:rotate-180 fill-current">
+            <svg
+              width="6"
+              height="10"
+              viewBox="0 0 6 10"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              className="fill-current"
+            >
+              <rect
+                x="1.08984"
+                width="6.94106"
+                height="1.54246"
+                transform="rotate(45 1.08984 0)"
+              />
+              <rect
+                x="6"
+                y="4.9082"
+                width="6.94106"
+                height="1.54246"
+                transform="rotate(135 6 4.9082)"
+              />
+            </svg>
+          </span>
+        </div>
+      </div>
+    </a>
+  </Link>
+)}
+
               </div>
             )}
           </div>
