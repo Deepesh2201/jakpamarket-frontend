@@ -16,6 +16,12 @@ export default {
       url: "store-register",
       data,
     }),
+    sellersignup: (data) =>
+      instance({
+        method: "POST",
+        url: "seller-request",
+        data,
+      }),
   login: (data) =>
     instance({
       method: "POST",

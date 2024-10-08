@@ -763,7 +763,7 @@ export default function ProductView({
               </div>
 
             </div>
-            {seller && (
+            {/* {seller && (
                 <div data-aos="fade-up" className="message-btn">
                   <button onClick={()=>popupMessageHandler()} className="flex px-5 py-2 bg-qyellow text-qblack items-center space-x-2.5" type="button">
                 <span>
@@ -774,7 +774,7 @@ export default function ProductView({
                 </span>
                   </button>
                 </div>
-            )}
+            )} */}
 
           </div>
         </div>

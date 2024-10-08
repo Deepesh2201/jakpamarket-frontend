@@ -345,9 +345,9 @@ export default function DefaultLayout({ children }) {
                   </div>
                 </div>
               )}
-              {parseInt(enable_multivendor) === 1 && messageWid && (
+              {/* {parseInt(enable_multivendor) === 1 && messageWid && (
                 <MessageWidget pusher={messageWid} />
-              )}
+              )} */}
             </div>
           ) : (
             <div className="w-full h-full fixed bg-white px-5 py-5">

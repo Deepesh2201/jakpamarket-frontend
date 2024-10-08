@@ -533,7 +533,7 @@ export default function Navbar({ className }) {
             </div>
             {Multivendor() === 1 && (
               <div className="become-seller-btn">
-                {auth() && (
+                { !auth() && (
   <Link href="/become-seller" passHref>
     <a rel="noopener noreferrer">
       <div className="w-[161px] h-[40px] flex justify-center items-center cursor-pointer">

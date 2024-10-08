@@ -2,21 +2,28 @@ import axios from "axios";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/router";
-import {useEffect, useRef, useState} from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "react-toastify";
 import isMultivendor from "../../../Middleware/isMultivendor";
+import apiRequest from "../../../utils/apiRequest";
 import auth from "../../../utils/auth";
 import InputCom from "../Helpers/InputCom";
 import PageTitle from "../Helpers/PageTitle";
-import {useSelector} from "react-redux";
+import { useSelector } from "react-redux";
 import ServeLangItem from "../Helpers/ServeLangItem";
+import LoaderStyleOne from "../Helpers/Loaders/LoaderStyleOne";
 function BecomeSaller() {
   const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [logoImg, setLogoImg] = useState(null);
   const [coverImg, setCoverImg] = useState(null);
   const [checked, setCheck] = useState(false);
+  const [fname, setFname] = useState("");
+  const [lname, setLname] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [shopName, setName] = useState("");
   const [shopAddress, setAddress] = useState("");
   const [errors, setErrors] = useState(null);
@@ -30,7 +37,7 @@ function BecomeSaller() {
     if (!defaultCover || !defaultLogo) {
       if (websiteSetup) {
         setDefaultCover(
-            websiteSetup.payload?.image_content.become_seller_banner
+          websiteSetup.payload?.image_content.become_seller_banner
         );
         setLogo(websiteSetup.payload?.image_content.become_seller_avatar);
       }
@@ -83,57 +90,84 @@ function BecomeSaller() {
   const rememberMe = () => {
     setCheck(!checked);
   };
+  // const sellerReq = async () => {
+  //   const formData = new FormData();
+  //   formData.append("banner_image", uploadCoverImg);
+  //   formData.append("shop_name", shopName);
+  //   formData.append("fname", fname);
+  //   formData.append("lname", lname);
+  //   formData.append("email", email);
+  //   formData.append("phone", phone);
+  //   formData.append("address", shopAddress);
+  //   formData.append("password", password);
+  //   formData.append("confirmPassword", confirmPassword);
+  //   formData.append("open_at", "10.00AM");
+  //   formData.append("closed_at", "10.00PM");
+  //   formData.append("agree_terms_condition", checked);
+  //   formData.append("logo", uploadLogo);
+  
+  //   const options = {
+  //     onUploadProgress: (progressEvent) => {
+  //       const { loaded, total } = progressEvent;
+  //       let percent = Math.floor((loaded * 100) / total);
+  //       setProgress(percent);
+  //     },
+  //   };
+  
+  //   await axios
+  //     .post(
+  //       `${process.env.NEXT_PUBLIC_BASE_URL}api/seller-request`,
+  //       formData,
+  //       options
+  //     )
+  //     .then((res) => {
+  //       toast.success("Congratulation! Your seller request was successfully delivered.");
+  //       router.push("/");
+  //     })
+  //     .catch((err) => {
+  //       setErrors(err.response && err.response.data.errors);
+  //       if (err.response && err.response.data.notification) {
+  //         toast.error(err.response.data.notification);
+  //       }
+  //     });
+  // };
   const sellerReq = async () => {
-    if (auth()) {
-      const formData = new FormData();
-      formData.append("banner_image", uploadCoverImg);
-      formData.append("shop_name", shopName);
-      formData.append("email", email);
-      formData.append("phone", phone);
-      formData.append("address", shopAddress);
-      formData.append("open_at", "10.00AM");
-      formData.append("closed_at", "10.00PM");
-      formData.append("agree_terms_condition", checked);
-      formData.append("logo", uploadLogo);
-      const options = {
-        onUploadProgress: (progressEvent) => {
-          const { loaded, total } = progressEvent;
-          let percent = Math.floor((loaded * 100) / total);
-          setProgress(percent);
-        },
-      };
-      await axios
-        .post(
-          `${process.env.NEXT_PUBLIC_BASE_URL}api/user/seller-request?token=${
-            auth().access_token
-          }`,
-          formData,
-          options
-        )
-        .then((res) => {
-          toast.success(
-            "Congratulation Your seller request successfully delivered"
-          );
+    setLoading(true);
+    
+    // Check if phone number starts with +233
+    // const isPhoneNumberValid = phone.startsWith("+233");
 
-          // apiRequest.logout(auth.access_token);
-          // localStorage.removeItem("auth");
-          // dispatch(fetchWishlist());
-          // dispatch(fetchCart());
-          router.push("/");
+    await apiRequest
+        .sellersignup({
+            
+            banner_image:uploadCoverImg,
+    shop_name:shopName,
+    fname:fname,
+    lname:lname,
+    email:email,
+    phone:phone,
+    address:shopAddress,
+    password:password,
+    confirmPassword:confirmPassword,
+    open_at:"10.00AM",
+    closed_at:"10.00PM",
+    agree_terms_condition:checked,
+    logo:uploadLogo,
+        })
+        .then((res) => {
+            setLoading(false);
+            // toast.success(res.data.notification);
+            toast.success("Congratulation! Your seller request was successfully delivered.");
+            router.push("/");
+            
         })
         .catch((err) => {
           setErrors(err.response && err.response.data.errors);
-          if(err.response && err.response.data.notification){
-            toast.error(
-                err.response.data.notification
-            );
+          if (err.response && err.response.data.notification) {
+            toast.error(err.response.data.notification);
           }
         });
-    } else {
-      router.push("/login");
-      toast.warn("Please Login First");
-    }
-  };
+};
   return (
     <div className="become-saller-wrapper w-full">
       <div className="title mb-10">
@@ -152,67 +186,116 @@ function BecomeSaller() {
               <div className="xl:w-[824px]">
                 <div className="title w-full mb-4">
                   <h1 className="text-[22px] font-semibold text-qblack mb-1">
-                    {ServeLangItem()?.Seller_Information}</h1>
+                    {ServeLangItem()?.Seller_Information}
+                  </h1>
                   <p className="text-[15px] text-qgraytwo">
-                    {ServeLangItem()?.Fill_the_form_below_or_write_us_We_will_help_you_as_soon_as_possible}
+                    {
+                      ServeLangItem()
+                        ?.Fill_the_form_below_or_write_us_We_will_help_you_as_soon_as_possible
+                    }
                   </p>
                 </div>
                 <div className="input-area">
-                  {/*<div className="flex sm:flex-row flex-col space-y-5 sm:space-y-0 sm:space-x-5 mb-5">*/}
-                  {/*  <InputCom*/}
-                  {/*    placeholder="Demo Name"*/}
-                  {/*    label="Frist Name*"*/}
-                  {/*    name="fname"*/}
-                  {/*    type="text"*/}
-                  {/*    inputClasses="h-[50px]"*/}
-                  {/*  />*/}
+                <div className="row">
+                <div className="flex flex-col sm:flex-row sm:space-x-5 space-y-5 sm:space-y-0 mb-5">
+  <div className="h-full w-full">
+      <div className="h-full">
+        <InputCom
+          placeholder={ServeLangItem()?.Name}
+          label={ServeLangItem()?.First_Name + "*"}
+          name="fname"
+          type="text"
+          inputClasses="h-[50px]"
+          value={fname}
+          inputHandler={(e) => setFname(e.target.value)}
+        />
+        {errors && Object.hasOwn(errors, "fname") ? (
+          <span className="text-sm mt-1 text-qred">{errors.fname[0]}</span>
+        ) : null}
+      </div>
 
-                  {/*  <InputCom*/}
-                  {/*    placeholder="Demo Name"*/}
-                  {/*    label="Last Name*"*/}
-                  {/*    name="lname"*/}
-                  {/*    type="text"*/}
-                  {/*    inputClasses="h-[50px]"*/}
-                  {/*  />*/}
-                  {/*</div>*/}
-                  <div className="mb-5">
-                    <InputCom
-                      placeholder={ServeLangItem()?.Email}
-                      label={ServeLangItem()?.Email_Address+"*"}
-                      name="email"
-                      type="email"
-                      inputClasses="h-[50px]"
-                      value={email}
-                      inputHandler={(e) => setEmail(e.target.value)}
-                      error={!!(errors && Object.hasOwn(errors, "email"))}
-                    />
-                    {errors && Object.hasOwn(errors, "email") ? (
-                      <span className="text-sm mt-1 text-qred">
-                        {errors.email[0]}
-                      </span>
-                    ) : (
-                      ""
-                    )}
-                  </div>
-                  <div className="mb-5">
-                    <InputCom
-                      placeholder="0213 *********"
-                      label={ServeLangItem()?.phone+"*"}
-                      name="phone"
-                      type="text"
-                      inputClasses="h-[50px]"
-                      value={phone}
-                      inputHandler={(e) => setPhone(e.target.value)}
-                      error={!!(errors && Object.hasOwn(errors, "phone"))}
-                    />
-                    {errors && Object.hasOwn(errors, "phone") ? (
-                      <span className="text-sm mt-1 text-qred">
-                        {errors.phone[0]}
-                      </span>
-                    ) : (
-                      ""
-                    )}
-                  </div>
+      <div className="h-full">
+        <InputCom
+          placeholder={ServeLangItem()?.Name}
+          label={ServeLangItem()?.Last_Name + "*"}
+          name="lname"
+          type="text"
+          inputClasses="h-[50px]"
+          value={lname}
+          inputHandler={(e) => setLname(e.target.value)}
+        />
+        {errors && Object.hasOwn(errors, "lname") ? (
+          <span className="text-sm mt-1 text-qred">{errors.lname[0]}</span>
+        ) : null}
+      </div>
+    </div>
+  </div>
+</div>
+
+<div className="mb-5">
+  <InputCom
+    placeholder={ServeLangItem()?.Email}
+    label={ServeLangItem()?.Email_Address + "*"}
+    name="email"
+    type="email"
+    inputClasses="h-[50px]"
+    value={email}
+    inputHandler={(e) => setEmail(e.target.value)}
+    error={!!(errors && Object.hasOwn(errors, "email"))}
+  />
+  {errors && Object.hasOwn(errors, "email") ? (
+    <span className="text-sm mt-1 text-qred">{errors.email[0]}</span>
+  ) : null}
+</div>
+
+<div className="mb-5">
+  <InputCom
+    placeholder="0213 *********"
+    label={ServeLangItem()?.phone + "*"}
+    name="phone"
+    type="text"
+    inputClasses="h-[50px]"
+    value={phone}
+    inputHandler={(e) => setPhone(e.target.value)}
+    error={!!(errors && Object.hasOwn(errors, "phone"))}
+  />
+  {errors && Object.hasOwn(errors, "phone") ? (
+    <span className="text-sm mt-1 text-qred">{errors.phone[0]}</span>
+  ) : null}
+</div>
+
+<div className="flex flex-col sm:flex-row sm:space-x-5 space-y-5 sm:space-y-0 mb-5">
+  <div className="h-full w-full">
+    <InputCom
+      placeholder="* * * * * *"
+      label={ServeLangItem()?.Password + "*"}
+      name="password"
+      type="password"
+      inputClasses="h-[50px]"
+      value={password}
+      inputHandler={(e) => setPassword(e.target.value)}
+    />
+    {errors && Object.hasOwn(errors, "password") ? (
+      <span className="text-sm mt-1 text-qred">{errors.password[0]}</span>
+    ) : null}
+  </div>
+
+  <div className="h-full w-full">
+    <InputCom
+      placeholder="* * * * * *"
+      label={ServeLangItem()?.Confirm_Password + "*"}
+      name="confirm_password"
+      type="password"
+      inputClasses="h-[50px]"
+      value={confirmPassword}
+      inputHandler={(e) => setConfirmPassword(e.target.value)}
+    />
+    {errors && Object.hasOwn(errors, "password") ? (
+      <span className="text-sm mt-1 text-qred">{errors.password[0]}</span>
+    ) : null}
+  </div>
+</div>
+
 
                   {/*<div className="input-item mb-5">*/}
                   {/*  <h6 className="input-label text-qgray capitalize text-[13px] font-normal block mb-2 ">*/}
@@ -256,14 +339,17 @@ function BecomeSaller() {
                     {ServeLangItem()?.Shop_Information}
                   </h1>
                   <p className="text-[15px] text-qgraytwo">
-                    {ServeLangItem()?.Fill_the_form_below_or_write_us_We_will_help_you_as_soon_as_possible}
+                    {
+                      ServeLangItem()
+                        ?.Fill_the_form_below_or_write_us_We_will_help_you_as_soon_as_possible
+                    }
                   </p>
                 </div>
                 <div className="input-area">
                   <div className="mb-5">
                     <InputCom
                       placeholder={ServeLangItem()?.Name}
-                      label={ServeLangItem()?.Shop_Name+"*"}
+                      label={ServeLangItem()?.Shop_Name + "*"}
                       name="shopname"
                       type="text"
                       inputClasses="h-[50px]"
@@ -338,7 +424,10 @@ function BecomeSaller() {
                     </button>
                     <Link href="/seller-terms-condition">
                       <span className="text-base text-black cursor-pointer">
-                        {ServeLangItem()?.I_agree_all_terms_and_condition_in_ecoShop}
+                        {
+                          ServeLangItem()
+                            ?.I_agree_all_terms_and_condition_in_ecoShop
+                        }
                       </span>
                     </Link>
                   </div>
@@ -364,6 +453,11 @@ function BecomeSaller() {
                         className="black-btn disabled:bg-opacity-50 disabled:cursor-not-allowed  text-sm text-white w-[490px] h-[50px] font-semibold flex justify-center bg-purple items-center"
                       >
                         <span>{ServeLangItem()?.Create_Seller_Account}</span>
+                        {loading && (
+                    <span className="w-5 " style={{ transform: "scale(0.3)" }}>
+                  <LoaderStyleOne />
+                </span>
+                )}
                       </button>
                     </div>
                   </div>
@@ -450,24 +544,28 @@ function BecomeSaller() {
                   </h1>
                   <p className="text-sm text-qgraytwo mb-5">
                     {ServeLangItem()?.Profile_of_at_least_Size}
-                    <span className="ml-1 text-qblack">300x300</span>. {ServeLangItem()?.Gifs_work_too}.
-                    <span className="ml-1 text-qblack">{ServeLangItem()?.Max_5mb}</span>.
+                    <span className="ml-1 text-qblack">300x300</span>.{" "}
+                    {ServeLangItem()?.Gifs_work_too}.
+                    <span className="ml-1 text-qblack">
+                      {ServeLangItem()?.Max_5mb}
+                    </span>
+                    .
                   </p>
                   <div className="flex xl:justify-center justify-start">
                     <div className="relative">
                       <div className="sm:w-[198px] sm:h-[198px] w-[199px] h-[199px] rounded-full overflow-hidden relative">
                         {defaultLogo && (
-                            <Image
-                                objectFit="cover"
-                                layout="fill"
-                                src={
-                                  logoImg
-                                      ? logoImg
-                                      : defaultLogo &&
-                                      process.env.NEXT_PUBLIC_BASE_URL + defaultLogo
-                                }
-                                alt=""
-                            />
+                          <Image
+                            objectFit="cover"
+                            layout="fill"
+                            src={
+                              logoImg
+                                ? logoImg
+                                : defaultLogo &&
+                                  process.env.NEXT_PUBLIC_BASE_URL + defaultLogo
+                            }
+                            alt=""
+                          />
                         )}
                       </div>
                       <input
@@ -503,7 +601,6 @@ function BecomeSaller() {
                 <div className="update-cover w-full">
                   <h1 className="text-xl tracking-wide font-bold text-qblack mb-2">
                     {ServeLangItem()?.Update_Cover}
-
                   </h1>
                   <p className="text-sm text-qgraytwo mb-5">
                     {ServeLangItem()?.Cover_of_at_least_Size}
@@ -513,17 +610,17 @@ function BecomeSaller() {
                     <div className="w-full relative">
                       <div className="w-full h-[120px] rounded-lg overflow-hidden object-cover">
                         {defaultCover && (
-                            <Image
-                                layout="fill"
-                                src={
-                                  coverImg
-                                      ? coverImg
-                                      : defaultCover &&
-                                      process.env.NEXT_PUBLIC_BASE_URL +
-                                      defaultCover
-                                }
-                                alt=""
-                            />
+                          <Image
+                            layout="fill"
+                            src={
+                              coverImg
+                                ? coverImg
+                                : defaultCover &&
+                                  process.env.NEXT_PUBLIC_BASE_URL +
+                                    defaultCover
+                            }
+                            alt=""
+                          />
                         )}
                       </div>
 
