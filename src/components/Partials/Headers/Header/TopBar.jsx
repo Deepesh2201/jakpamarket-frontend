@@ -52,7 +52,16 @@ export default function TopBar({ className, contact,topBarProps }) {
                     </a>
                   </Link>
                 </li>
-                {defaultCurrency && allCurrency && (
+                <li>
+                  <Link href="https://admin.jakpamarket.com/seller/login" passHref>
+                    <a rel="noopener noreferrer">
+                      <span className="text-xs leading-6 text-qblack font-500 cursor-pointer">
+                        Seller Login
+                      </span>
+                    </a>
+                  </Link>
+                </li>
+                {/* {defaultCurrency && allCurrency && (
                     <li>
                       <div className="currencyDropdown">
                         <div className="flex space-x-2 items-center">
@@ -84,7 +93,7 @@ export default function TopBar({ className, contact,topBarProps }) {
                       </div>
 
                     </li>
-                )}
+                )} */}
 
               </ul>
             </div>
